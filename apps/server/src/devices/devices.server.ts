@@ -5,7 +5,7 @@ import { DEVICES } from './devices.enum';
 import { ACTIONS } from './devices.enum';
 import { map } from 'rxjs';
 import { AddDevicePayload } from './devices.type';
-import { DeviceStatus } from '@prisma/client';
+import { DeviceActionType, DeviceStatus } from '@prisma/client';
 
 const ACTION_TOPIC = 'esp32/actions';
 
@@ -17,17 +17,56 @@ export class DevicesService {
   ) {}
 
   async controlDevice(device_id: string, action: ACTIONS) {
-    const device = await this.prisma.device.findUnique({
+    const device = await this.prisma.device.findFirst({
       where: {
-        id: device_id,
+        OR: [{ id: device_id }, { sensor_id: device_id }],
+      },
+      include: {
+        status: true,
       },
     });
+    const status = device.status.status;
     if (!device) {
       throw new NotFoundException('Device not found');
     }
-    return this.mqttClient
-      .emit(ACTION_TOPIC, { action: action.toLowerCase(), relay: device.sensor_id })
-      .pipe(map((response) => response.data));
+    return Promise.all([
+      this.mqttClient
+        .emit(ACTION_TOPIC, { action: action.toLowerCase(), relay: device.sensor_id })
+        .pipe(map((response) => response.data)),
+      this.prisma.$transaction(async (tx) => {
+        await Promise.all([
+          tx.device.update({
+            where: { id: device.id },
+            data: { status: { update: { status: action.toLowerCase() as DeviceStatus } } },
+          }),
+          tx.devicesActionLog.create({
+            data: {
+              device: {
+                connect: {
+                  id: device.id,
+                },
+              },
+              status_before: status,
+              status_after: action.toLowerCase() as DeviceStatus,
+              user: {
+                connect: {
+                  id: '1',
+                },
+              },
+              is_executing: true,
+              action: (() => {
+                switch (action) {
+                  case ACTIONS.ON:
+                    return DeviceActionType.switch_on;
+                  case ACTIONS.OFF:
+                    return DeviceActionType.switch_off;
+                }
+              })(),
+            },
+          }),
+        ]);
+      }),
+    ]);
   }
 
   async addDevice(device: AddDevicePayload) {

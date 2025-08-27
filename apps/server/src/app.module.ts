@@ -9,6 +9,7 @@ import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
+import { SensorsModule } from './sensors/sensors.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import * as Joi from 'joi';
       ],
     }),
     DevicesModule,
+    SensorsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

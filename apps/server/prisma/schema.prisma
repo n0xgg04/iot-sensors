@@ -63,9 +63,9 @@ model SensorData {
 }
 
 model Device {
-  id         String   @id @default(uuid())
+  id         String @id @default(uuid())
   name       String
-  sensor_id  String
+  sensor_id  String @unique
   port       Int @default(0)
   location   String?
   created_at DateTime @default(now())
@@ -74,6 +74,9 @@ model Device {
   status     CurrentDeviceStatus?
   actions    DevicesActionLog[]
   scripts    DeviceScript[]
+
+  @@unique([id, sensor_id])
+  @@index([id, sensor_id])
 }
 
 model CurrentDeviceStatus {
