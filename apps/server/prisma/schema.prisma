@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgres"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- ENUMS ----------
+enum DeviceStatus {
+  on
+  off
+  standby
+}
+
+enum DeviceActionType {
+  switch_on
+  switch_off
+  adjust_temperature
+}
+
+// ---------- MODELS ----------
+model User {
+  id          String   @id @default(uuid())
+  username    String   @unique
+  password    String
+  phoneNumber String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  actions     DevicesActionLog[]
+}
+
+model Sensor {
+  id         String   @id @default(uuid())
+  name       String
+  is_active  Boolean  @default(true)
+  location   String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  data       SensorData[]
+}
+
+model SensorData {
+  id          Int      @id @default(autoincrement())
+  sensor_id   String
+  data        Json
+  temperature Float?
+  humidity    Float?
+  light       Float?
+  created_at  DateTime @default(now())
+
+  sensor      Sensor   @relation(fields: [sensor_id], references: [id], onDelete: Cascade)
+}
+
+model Device {
+  id         String   @id @default(uuid())
+  name       String
+  location   String?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  status     CurrentDeviceStatus?
+  actions    DevicesActionLog[]
+}
+
+model CurrentDeviceStatus {
+  device_id  String   @id
+  status     DeviceStatus
+  updated_at DateTime @updatedAt
+
+  device     Device   @relation(fields: [device_id], references: [id], onDelete: Cascade)
+}
+
+model DevicesActionLog {
+  id            Int              @id @default(autoincrement())
+  device_id     String
+  action        DeviceActionType
+  user_id       String
+  is_executing  Boolean          @default(false)
+  status_before String
+  status_after  String?
+  created_at    DateTime         @default(now())
+
+  device        Device           @relation(fields: [device_id], references: [id], onDelete: Cascade)
+  user          User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
