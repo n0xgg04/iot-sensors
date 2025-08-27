@@ -31,11 +31,11 @@ RelayMap relays[] = {
 };
 
 // ---- MQTT -----
-const char* mqtt_server = "105f292e81544bddb610d5c5c50c582b.s1.eu.hivemq.cloud"; 
-const int mqtt_port = 8883;
-const char* mqtt_user = "tuananh";
-const char* mqtt_pass = "Tuananh123";
-const char* mqtt_clientID = "ESP32_Client";
+const char* mqtt_server = ""; 
+const int mqtt_port = ;
+const char* mqtt_user = "";
+const char* mqtt_pass = "";
+const char* mqtt_clientID = "";
 
 const char* MQTT_SENSORS_DATA_TOPIC = "esp32/sensors";
 const char* MQTT_ACTIONS_TOPIC = "esp32/actions";
