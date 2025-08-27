@@ -26,12 +26,13 @@ enum DeviceActionType {
   adjust_temperature
 }
 
+
 // ---------- MODELS ----------
 model User {
   id          String   @id @default(uuid())
-  username    String   @unique
+  email       String   @unique
   password    String
-  phoneNumber String?
+  phone       String?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
@@ -64,16 +65,19 @@ model SensorData {
 model Device {
   id         String   @id @default(uuid())
   name       String
+  sensor_id  String
+  port       Int @default(0)
   location   String?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
   status     CurrentDeviceStatus?
   actions    DevicesActionLog[]
+  scripts    DeviceScript[]
 }
 
 model CurrentDeviceStatus {
-  device_id  String   @id
+  device_id  String   @id 
   status     DeviceStatus
   updated_at DateTime @updatedAt
 
@@ -92,4 +96,61 @@ model DevicesActionLog {
 
   device        Device           @relation(fields: [device_id], references: [id], onDelete: Cascade)
   user          User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model DeviceScript {
+  id          String   @id @default(uuid())
+  device_id   String
+  name        String
+  description String?
+  
+  conditions  ScriptCondition[]
+  actions     ScriptAction[]
+  
+  is_active   Boolean   @default(true)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  device      Device    @relation(fields: [device_id], references: [id], onDelete: Cascade)
+}
+
+model ScriptCondition {
+  id                String              @id @default(uuid())
+  script_id         String
+  condition_type    ScriptConditionType
+  sensor_type       SensorType
+  comparison_type   ComparisonType
+  value             Float
+
+  script            DeviceScript        @relation(fields: [script_id], references: [id], onDelete: Cascade)
+}
+
+model ScriptAction {
+  id                String              @id @default(uuid())
+  script_id         String
+  action_type       DeviceActionType
+  action_target     String
+  action_value      String?
+  script            DeviceScript        @relation(fields: [script_id], references: [id], onDelete: Cascade)
+}
+
+enum ScriptConditionType {
+  AND
+  OR
+}
+
+enum SensorType {
+  TEMPERATURE
+  HUMIDITY
+  LIGHT
+  DEVICE_STATUS
+}
+
+enum ComparisonType {
+  LESS_THAN
+  GREATER_THAN
+  EQUAL_TO
+  NOT_EQUAL_TO
+  LESS_THAN_OR_EQUAL
+  GREATER_THAN_OR_EQUAL
 }
