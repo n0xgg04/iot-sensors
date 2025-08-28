@@ -15,7 +15,6 @@ export class DevicesController {
   @MessagePattern('esp32/action_responses')
   async handleActionResponse(@Payload() onlineData: any, @Ctx() context: MqttContext) {
     const payload = context.getPacket().payload;
-    console.log('Received action response:', payload);
 
     try {
       const data = JSON.parse(payload.toString());
