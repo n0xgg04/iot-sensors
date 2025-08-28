@@ -15,8 +15,6 @@ export class SensorsObserver {
   @MessagePattern('esp32/sensors')
   getSensorData(@SensorData() data: SensorDataInput, @Ctx() context: MqttContext) {
     this.sensorsService.createSensorData(data);
-    console.log(data);
-
     this.websocketGateway.broadcastSensorData({
       topic: 'esp32/sensors',
       payload: data,
