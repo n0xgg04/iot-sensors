@@ -36,6 +36,7 @@ import { CacheModule } from '@nestjs/cache-manager';
       include: [DevicesModule, SensorsModule],
       autoSchemaFile: true,
       playground: false,
+      introspection: true,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
     }),
     CacheModule.registerAsync({

@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   apps: [
     {
       script: "npx next start --port 1893",
