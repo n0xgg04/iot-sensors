@@ -17,6 +17,7 @@ This system provides real-time monitoring of IoT sensors (temperature, humidity,
 
 - Interactive line chart using Recharts
 - Configurable time ranges:
+  - Last 1 Minute
   - Last 15 Minutes
   - Last 30 Minutes
   - Last 1 Hour

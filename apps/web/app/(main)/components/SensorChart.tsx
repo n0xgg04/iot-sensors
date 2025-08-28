@@ -40,7 +40,10 @@ export const SensorChart: React.FC = () => {
     const toDate = new Date();
     const fromDate = new Date();
 
-    if (timeRange <= 1) {
+    if (timeRange <= 0.1) {
+      const minutes = Math.round(timeRange * 60);
+      fromDate.setMinutes(fromDate.getMinutes() - minutes);
+    } else if (timeRange <= 1) {
       const minutes = Math.round(timeRange * 60);
       fromDate.setMinutes(fromDate.getMinutes() - minutes);
     } else if (timeRange < 24) {
@@ -104,8 +107,9 @@ export const SensorChart: React.FC = () => {
           <Select
             value={timeRange}
             onChange={handleTimeRangeChange}
-            style={{ width: 140 }}
+            style={{ width: 160 }}
           >
+            <Option value={0.0167}>Last 1 Minute</Option>
             <Option value={0.25}>Last 15 Minutes</Option>
             <Option value={0.5}>Last 30 Minutes</Option>
             <Option value={1}>Last 1 Hour</Option>

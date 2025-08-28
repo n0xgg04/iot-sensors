@@ -16,7 +16,9 @@ export const useSensorData = (from: Date, to: Date, timeRange?: number) => {
   const getPollInterval = () => {
     if (!timeRange) return 10000;
 
-    if (timeRange <= 1) {
+    if (timeRange <= 0.1) {
+      return 2000;
+    } else if (timeRange <= 1) {
       return 5000;
     } else if (timeRange <= 6) {
       return 10000;
