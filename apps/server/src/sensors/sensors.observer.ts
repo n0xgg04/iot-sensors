@@ -1,12 +1,16 @@
 import { Injectable, OnModuleInit, Inject, Logger, Controller } from '@nestjs/common';
-import { Ctx, MessagePattern, MqttContext, Payload } from '@nestjs/microservices';
+import { Ctx, MessagePattern, MqttContext } from '@nestjs/microservices';
+import { SensorDataType } from './sensors.type';
+import { SensorData } from './decorators/parser';
+import { SensorsService } from './sensors.service';
 
 @Controller()
 export class SensorsObserver {
+  constructor(private readonly sensorsService: SensorsService) {}
+
   @MessagePattern('esp32/sensors')
-  getSensorData(@Payload() data: any, @Ctx() context: MqttContext) {
-    console.log('Received MQTT message:', data);
-    console.log('Topic:', context.getTopic());
+  getSensorData(@SensorData() data: SensorDataType, @Ctx() context: MqttContext) {
+    this.sensorsService.createSensorData(data);
     return { ack: true };
   }
 }

@@ -5,7 +5,7 @@ import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  
+
   try {
     const app = await NestFactory.create(AppModule);
 
@@ -33,7 +33,6 @@ async function bootstrap() {
     await app.listen(process.env.PORT || 3000);
     logger.log(`🚀 HTTP Server running on port ${process.env.PORT || 3000}`);
     logger.log('🔌 MQTT listener is active and waiting for messages...');
-    
   } catch (error) {
     logger.error('❌ Failed to start application:', error);
     process.exit(1);

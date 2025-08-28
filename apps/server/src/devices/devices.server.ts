@@ -29,44 +29,42 @@ export class DevicesService {
     if (!device) {
       throw new NotFoundException('Device not found');
     }
-    return Promise.all([
-      this.mqttClient
-        .emit(ACTION_TOPIC, { action: action.toLowerCase(), relay: device.sensor_id })
-        .pipe(map((response) => response.data)),
-      this.prisma.$transaction(async (tx) => {
-        await Promise.all([
-          tx.device.update({
-            where: { id: device.id },
-            data: { status: { update: { status: action.toLowerCase() as DeviceStatus } } },
-          }),
-          tx.devicesActionLog.create({
-            data: {
-              device: {
-                connect: {
-                  id: device.id,
-                },
+    const result = await this.prisma.$transaction(async (tx) => {
+      return await Promise.all([
+        tx.device.update({
+          where: { id: device.id },
+          data: { status: { update: { status: action.toLowerCase() as DeviceStatus } } },
+        }),
+        tx.devicesActionLog.create({
+          data: {
+            device: {
+              connect: {
+                id: device.id,
               },
-              status_before: status,
-              status_after: action.toLowerCase() as DeviceStatus,
-              user: {
-                connect: {
-                  id: '1',
-                },
-              },
-              is_executing: true,
-              action: (() => {
-                switch (action) {
-                  case ACTIONS.ON:
-                    return DeviceActionType.switch_on;
-                  case ACTIONS.OFF:
-                    return DeviceActionType.switch_off;
-                }
-              })(),
             },
-          }),
-        ]);
-      }),
-    ]);
+            status_before: status,
+            status_after: action.toLowerCase() as DeviceStatus,
+            user: {
+              connect: {
+                id: '1',
+              },
+            },
+            is_executing: true,
+            action: (() => {
+              switch (action) {
+                case ACTIONS.ON:
+                  return DeviceActionType.switch_on;
+                case ACTIONS.OFF:
+                  return DeviceActionType.switch_off;
+              }
+            })(),
+          },
+        }),
+      ]);
+    });
+    return this.mqttClient
+      .emit(ACTION_TOPIC, { action: action.toLowerCase(), relay: device.sensor_id, action_id: result[1].id })
+      .pipe(map((response) => response.data));
   }
 
   async addDevice(device: AddDevicePayload) {
@@ -109,5 +107,14 @@ export class DevicesService {
           };
         });
       });
+  }
+
+  async updateActionLogStatus(actionId: number) {
+    return this.prisma.devicesActionLog.update({
+      where: { id: actionId },
+      data: {
+        is_executing: false,
+      },
+    });
   }
 }
