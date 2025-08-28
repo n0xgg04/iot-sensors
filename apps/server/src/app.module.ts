@@ -10,6 +10,10 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 import { SensorsModule } from './sensors/sensors.module';
+import { OnlineModule } from './online/online.module';
+import { WebsocketModule } from './websocket/websocket.module';
+import { redisStore } from 'cache-manager-redis-store';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -22,15 +26,26 @@ import { SensorsModule } from './sensors/sensors.module';
           MQTT_PASSWORD: Joi.string().required(),
           MQTT_CLIENT_ID: Joi.string().required(),
           DATABASE_URL: Joi.string().required(),
+          REDIS_URL: Joi.string().required(),
         }).validate(config),
     }),
+
     PrismaModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      include: [DevicesModule],
+      include: [DevicesModule, SensorsModule],
       autoSchemaFile: true,
       playground: false,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
+    }),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      useFactory: async (config: ConfigService) => {
+        return {
+          store: await redisStore({ url: config.get('REDIS_URL') }),
+        };
+      },
+      inject: [ConfigService],
     }),
     ClientsModule.registerAsync({
       isGlobal: true,
@@ -50,8 +65,10 @@ import { SensorsModule } from './sensors/sensors.module';
         },
       ],
     }),
+    WebsocketModule,
     DevicesModule,
     SensorsModule,
+    OnlineModule,
   ],
   controllers: [AppController],
   providers: [AppService],

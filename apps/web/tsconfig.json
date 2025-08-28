@@ -1,6 +1,15 @@
 {
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["./shared/*"],
+      "@components/*": ["./app/components/*"],
+      "@providers/*": ["./shared/providers/*"],
+      "@theme/*": ["./shared/theme/*"],
+      "@queries/*": ["./graphql/queries/*"],
+      "@mutations/*": ["./graphql/mutations/*"]
+    },
     "plugins": [
       {
         "name": "next"
@@ -14,7 +23,5 @@
     "next.config.js",
     ".next/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

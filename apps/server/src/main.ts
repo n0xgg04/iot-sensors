@@ -9,6 +9,13 @@ async function bootstrap() {
   try {
     const app = await NestFactory.create(AppModule);
 
+    app.enableCors({
+      origin: process.env.WEB_ORIGIN || 'http://localhost:3001',
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+      allowedHeaders: '*',
+      credentials: true,
+    });
+
     logger.log('Connecting to MQTT broker...');
     logger.log(`MQTT URL: ${process.env.MQTT_URL}`);
     logger.log(`MQTT Client ID: ${process.env.MQTT_CLIENT_ID}`);
@@ -30,9 +37,12 @@ async function bootstrap() {
     await app.init();
     logger.log('✅ App initialized');
 
-    await app.listen(process.env.PORT || 3000);
-    logger.log(`🚀 HTTP Server running on port ${process.env.PORT || 3000}`);
-    logger.log('🔌 MQTT listener is active and waiting for messages...');
+    const port = process.env.PORT || 3000;
+    await app.listen(port);
+    logger.log(`🚀 HTTP Server running on port ${port}`);
+    logger.log(`🔌 WebSocket Gateway available at ws://localhost:${port}/ws`);
+    logger.log(`🔌 MQTT listener is active and waiting for messages...`);
+    logger.log(`🌐 CORS enabled for origin: ${process.env.WEB_ORIGIN || 'http://localhost:3001'}`);
   } catch (error) {
     logger.error('❌ Failed to start application:', error);
     process.exit(1);

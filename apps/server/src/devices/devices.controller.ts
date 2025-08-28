@@ -1,6 +1,7 @@
 import { Controller, Get, OnModuleInit } from '@nestjs/common';
-import { Ctx, MessagePattern, MqttContext } from '@nestjs/microservices';
+import { Ctx, MessagePattern, MqttContext, Payload } from '@nestjs/microservices';
 import { DevicesService } from './devices.server';
+import { OnlineData } from '../online/decorators/parser';
 
 @Controller('devices')
 export class DevicesController {
@@ -11,8 +12,8 @@ export class DevicesController {
     return this.devicesService.getDevices();
   }
 
-  @MessagePattern('esp32/action_response')
-  async handleActionResponse(@Ctx() context: MqttContext) {
+  @MessagePattern('esp32/action_responses')
+  async handleActionResponse(@Payload() onlineData: any, @Ctx() context: MqttContext) {
     const payload = context.getPacket().payload;
     console.log('Received action response:', payload);
 

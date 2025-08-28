@@ -1,0 +1,6 @@
+export const SOCKET_CONFIG = {
+  URL: process.env.NEXT_PUBLIC_WS_URL || "http://localhost:3000",
+  RECONNECT_INTERVAL: 5000,
+  MAX_RECONNECT_ATTEMPTS: 5,
+  TIMEOUT: 20000,
+};
